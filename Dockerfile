@@ -12,6 +12,7 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development"
+    BUNDLER_VERSION=2.5.10
 
 
 # Throw-away build stage to reduce size of final image
@@ -60,3 +61,17 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 CMD ["./bin/rails", "server"]
+
+#nuevo
+RUN apt update && apt install -y --no-install-recommends \
+  build-essential \
+  ruby-dev \
+  git \
+  curl \
+  && rm -rf /var/lib/apt/lists/*
+RUN gem install bundler -v $BUNDLER_VERSION
+WORKDIR /app
+COPY Gemfile Gemfile.lock ./
+RUN bundle check || bundle install
+COPY . ./
+ENTRYPOINT ["./entrypoints/docker-entrypoint.sh"]
